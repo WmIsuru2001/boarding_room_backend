@@ -3,12 +3,13 @@ const router = express.Router();
 const {
   getListings, getNearbyListings, getRecommended, getListing,
   createListing, updateListing, deleteListing,
-  getMyListings, toggleStatus, deletePhoto
+  getMyListings, toggleStatus, deletePhoto, getPlatformStats
 } = require('../controllers/listingController');
 const { protect, authorize, optionalAuth } = require('../middleware/auth');
 const { uploadPhotos } = require('../middleware/upload');
 
 router.get('/', getListings);
+router.get('/stats/platform', getPlatformStats);
 router.get('/nearby', getNearbyListings);
 router.get('/recommended', optionalAuth, getRecommended);
 router.get('/owner/my', protect, authorize('owner', 'admin'), getMyListings);

@@ -16,7 +16,7 @@ exports.updateProfile = async (req, res) => {
     const updates = { name, phone };
     if (university) updates.university = university;
     if (req.file) {
-      updates.avatar = await uploadToCloudinary(req.file.buffer, 'avatars');
+      updates.avatar = `/uploads/${req.file.filename}`;
     }
     const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true, runValidators: true });
     res.json({ success: true, user });

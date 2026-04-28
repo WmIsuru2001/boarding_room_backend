@@ -47,7 +47,7 @@ exports.getListings = async (req, res) => {
 
     res.json({ success: true, listings, total, pages: Math.ceil(total / limit), page: Number(page) });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error(err); res.status(500).json({ success: false, message: err.message });
   }
 };
 
@@ -143,9 +143,7 @@ exports.createListing = async (req, res) => {
     // Upload photos
     let photoUrls = [];
     if (req.files && req.files.length > 0) {
-      photoUrls = await Promise.all(
-        req.files.map(f => uploadToCloudinary(f.buffer, 'listings'))
-      );
+      photoUrls = req.files.map(f => `/uploads/${f.filename}`);
     }
 
     const coordsParsed = typeof coordinates === 'string' ? JSON.parse(coordinates) : coordinates;
@@ -198,7 +196,7 @@ exports.updateListing = async (req, res) => {
 
     // Handle new photos
     if (req.files && req.files.length > 0) {
-      const newPhotos = await Promise.all(req.files.map(f => uploadToCloudinary(f.buffer, 'listings')));
+      const newPhotos = req.files.map(f => `/uploads/${f.filename}`);
       updates.photos = [...(listing.photos || []), ...newPhotos];
     }
 
@@ -271,6 +269,34 @@ exports.deletePhoto = async (req, res) => {
     listing.photos = listing.photos.filter(p => p !== photoUrl);
     await listing.save();
     res.json({ success: true, photos: listing.photos });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// @desc    Get platform stats for homepage
+// @route   GET /api/listings/stats/platform
+exports.getPlatformStats = async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const Review = require('../models/Review');
+    
+    const [activeStudents, verifiedListings, totalReviews, verifiedOwners] = await Promise.all([
+      User.countDocuments({ role: 'student', isBanned: false }),
+      Listing.countDocuments({ status: { $in: ['available', 'occupied'] }, isActive: true }),
+      Review.countDocuments(),
+      User.countDocuments({ role: 'owner', verificationStatus: 'verified', isBanned: false })
+    ]);
+
+    res.json({
+      success: true,
+      stats: {
+        activeStudents,
+        verifiedListings,
+        totalReviews,
+        verifiedOwners
+      }
+    });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

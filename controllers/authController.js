@@ -97,14 +97,19 @@ exports.getMe = async (req, res) => {
 // @route   POST /api/auth/verify
 exports.uploadVerification = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ success: false, message: 'Please upload a document' });
+    if (!req.files || !req.files.nic || !req.files.bill) {
+      return res.status(400).json({ success: false, message: 'Please upload both NIC and Utility Bill' });
+    }
 
-    const url = await uploadToCloudinary(req.file.buffer, 'verifications');
-    req.user.verificationDocument = url;
+    const nicUrl = `/uploads/${req.files.nic[0].filename}`;
+    const billUrl = `/uploads/${req.files.bill[0].filename}`;
+
+    req.user.nicImage = nicUrl;
+    req.user.utilityBillImage = billUrl;
     req.user.verificationStatus = 'pending';
     await req.user.save();
 
-    res.json({ success: true, message: 'Document uploaded. Awaiting admin review.', url });
+    res.json({ success: true, message: 'Documents uploaded. Awaiting admin review.' });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

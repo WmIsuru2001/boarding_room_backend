@@ -14,17 +14,17 @@ const userSchema = new mongoose.Schema({
     enum: ['unverified', 'pending', 'verified', 'rejected'],
     default: 'unverified'
   },
-  verificationDocument: { type: String, default: '' },
+  nicImage: { type: String, default: '' },
+  utilityBillImage: { type: String, default: '' },
   isBanned: { type: Boolean, default: false },
   banReason: { type: String, default: '' },
   university: { type: mongoose.Schema.Types.ObjectId, ref: 'University' },
   createdAt: { type: Date, default: Date.now }
 }, { timestamps: true });
 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password') || !this.password) return next();
+userSchema.pre('save', async function () {
+  if (!this.isModified('password') || !this.password) return;
   this.password = await bcrypt.hash(this.password, 12);
-  next();
 });
 
 userSchema.methods.comparePassword = async function (candidatePassword) {

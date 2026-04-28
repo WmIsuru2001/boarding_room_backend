@@ -1,7 +1,21 @@
 const multer = require('multer');
 const path = require('path');
 
-const storage = multer.memoryStorage();
+const fs = require('fs');
+
+const uploadDir = path.join(__dirname, '../uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`);
+  }
+});
 
 const fileFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|webp|pdf/;
@@ -20,8 +34,17 @@ exports.uploadPhotos = multer({
   fileFilter
 }).array('photos', 10);
 
-exports.uploadDocument = multer({
+exports.uploadVerificationDocs = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   fileFilter
-}).single('document');
+}).fields([
+  { name: 'nic', maxCount: 1 },
+  { name: 'bill', maxCount: 1 }
+]);
+
+exports.uploadAvatar = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter
+}).single('avatar');
