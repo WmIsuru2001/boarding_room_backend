@@ -12,7 +12,8 @@ exports.getListings = async (req, res) => {
       roomType, facilities,
       status = 'available',
       sort = '-createdAt',
-      search, university
+      search, university,
+      gender
     } = req.query;
 
     const query = { isActive: true };
@@ -23,6 +24,9 @@ exports.getListings = async (req, res) => {
       if (maxPrice) query.price.$lte = Number(maxPrice);
     }
     if (roomType) query.roomType = roomType;
+    if (gender) {
+      query['tenantPreferences.gender'] = gender;
+    }
     if (facilities) {
       const facilityList = facilities.split(',');
       query.facilities = { $all: facilityList };
