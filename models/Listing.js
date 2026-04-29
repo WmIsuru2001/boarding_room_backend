@@ -13,6 +13,7 @@ const listingSchema = new mongoose.Schema({
     coordinates: { type: [Number], required: true } // [lng, lat]
   },
   address: { type: String, required: true },
+  contactNumber: { type: String },
   nearbyUniversity: { type: mongoose.Schema.Types.ObjectId, ref: 'University' },
   distanceFromUni: { type: Number }, // meters
   roomType: { type: String, enum: ['single', 'shared', 'studio', 'apartment'], default: 'single' },

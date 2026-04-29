@@ -101,8 +101,10 @@ exports.uploadVerification = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please upload both NIC and Utility Bill' });
     }
 
-    const nicUrl = `/uploads/${req.files.nic[0].filename}`;
-    const billUrl = `/uploads/${req.files.bill[0].filename}`;
+    const [nicUrl, billUrl] = await Promise.all([
+      uploadToCloudinary(req.files.nic[0].buffer, 'verification'),
+      uploadToCloudinary(req.files.bill[0].buffer, 'verification')
+    ]);
 
     req.user.nicImage = nicUrl;
     req.user.utilityBillImage = billUrl;

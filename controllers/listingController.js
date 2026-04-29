@@ -136,14 +136,15 @@ exports.createListing = async (req, res) => {
   try {
     const {
       title, description, price, deposit, priceNegotiable,
-      address, coordinates, roomType, facilities, rules,
+      address, contactNumber, coordinates, roomType, facilities, rules,
       tenantPreferences, nearbyUniversity
     } = req.body;
 
     // Upload photos
     let photoUrls = [];
     if (req.files && req.files.length > 0) {
-      photoUrls = req.files.map(f => `/uploads/${f.filename}`);
+      const uploadPromises = req.files.map(f => uploadToCloudinary(f.buffer, 'listings'));
+      photoUrls = await Promise.all(uploadPromises);
     }
 
     const coordsParsed = typeof coordinates === 'string' ? JSON.parse(coordinates) : coordinates;
@@ -157,6 +158,7 @@ exports.createListing = async (req, res) => {
       photos: photoUrls,
       location: { type: 'Point', coordinates: [coordsParsed.lng, coordsParsed.lat] },
       address,
+      contactNumber,
       roomType,
       facilities: typeof facilities === 'string' ? JSON.parse(facilities) : facilities,
       rules,
@@ -196,7 +198,8 @@ exports.updateListing = async (req, res) => {
 
     // Handle new photos
     if (req.files && req.files.length > 0) {
-      const newPhotos = req.files.map(f => `/uploads/${f.filename}`);
+      const uploadPromises = req.files.map(f => uploadToCloudinary(f.buffer, 'listings'));
+      const newPhotos = await Promise.all(uploadPromises);
       updates.photos = [...(listing.photos || []), ...newPhotos];
     }
 
@@ -246,6 +249,9 @@ exports.toggleStatus = async (req, res) => {
     if (!listing) return res.status(404).json({ success: false, message: 'Listing not found' });
     if (listing.owner.toString() !== req.user._id.toString()) {
       return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+    if (listing.status === 'pending' || listing.status === 'rejected') {
+      return res.status(400).json({ success: false, message: 'Cannot change status of unapproved listing' });
     }
     listing.status = listing.status === 'available' ? 'occupied' : 'available';
     await listing.save();
