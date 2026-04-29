@@ -16,10 +16,10 @@ const listingSchema = new mongoose.Schema({
   contactNumber: { type: String },
   nearbyUniversity: { type: mongoose.Schema.Types.ObjectId, ref: 'University' },
   distanceFromUni: { type: Number }, // meters
-  roomType: { type: String, enum: ['single', 'shared', 'studio', 'apartment'], default: 'single' },
+  roomType: { type: String, enum: ['single', 'shared', 'full house'], default: 'single' },
   facilities: [{
     type: String,
-    enum: ['wifi', 'ac', 'kitchen', 'bathroom', 'parking', 'laundry', 'security', 'furnished', 'water', 'electricity', 'tv']
+    enum: ['kitchen', 'bathroom', 'parking', 'laundry', 'security', 'furnished', 'water', 'electricity', 'tv']
   }],
   rules: { type: String, default: '' },
   tenantPreferences: {
