@@ -29,6 +29,8 @@ const listingSchema = new mongoose.Schema({
     noSmoking: { type: Boolean, default: false }
   },
   status: { type: String, enum: ['available', 'occupied', 'pending', 'rejected'], default: 'pending' },
+  occupiedFrom: { type: Date, default: null },
+  occupiedUntil: { type: Date, default: null },
   isActive: { type: Boolean, default: true },
   viewCount: { type: Number, default: 0 },
   favoriteCount: { type: Number, default: 0 },

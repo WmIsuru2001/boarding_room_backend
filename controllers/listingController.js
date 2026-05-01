@@ -257,13 +257,32 @@ exports.toggleStatus = async (req, res) => {
     if (listing.status === 'pending' || listing.status === 'rejected') {
       return res.status(400).json({ success: false, message: 'Cannot change status of unapproved listing' });
     }
-    listing.status = listing.status === 'available' ? 'occupied' : 'available';
+
+    const { status, occupiedFrom, occupiedUntil } = req.body;
+
+    if (status === 'occupied') {
+      listing.status = 'occupied';
+      listing.occupiedFrom = occupiedFrom ? new Date(occupiedFrom) : null;
+      listing.occupiedUntil = occupiedUntil ? new Date(occupiedUntil) : null;
+    } else {
+      listing.status = 'available';
+      listing.occupiedFrom = null;
+      listing.occupiedUntil = null;
+    }
+
     await listing.save();
-    res.json({ success: true, status: listing.status });
+    res.json({
+      success: true,
+      status: listing.status,
+      occupiedFrom: listing.occupiedFrom,
+      occupiedUntil: listing.occupiedUntil
+    });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 // @desc    Delete a photo from listing
 // @route   DELETE /api/listings/:id/photo
