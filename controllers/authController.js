@@ -10,12 +10,32 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 // @route   POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, campusRegistrationNumber } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ success: false, message: 'Email already registered' });
 
-    const user = await User.create({ name, email, password, role: role || 'student' });
+    let studentIdFrontImage = '';
+    let studentIdBackImage = '';
+
+    if (req.files) {
+      if (req.files.studentIdFront) {
+        studentIdFrontImage = await uploadToCloudinary(req.files.studentIdFront[0].buffer, 'verification');
+      }
+      if (req.files.studentIdBack) {
+        studentIdBackImage = await uploadToCloudinary(req.files.studentIdBack[0].buffer, 'verification');
+      }
+    }
+
+    const user = await User.create({ 
+      name, 
+      email, 
+      password, 
+      role: role || 'student',
+      campusRegistrationNumber: campusRegistrationNumber || '',
+      studentIdFrontImage,
+      studentIdBackImage
+    });
 
     // Create student profile if role is student
     if (user.role === 'student') {

@@ -57,6 +57,15 @@ exports.uploadVerificationDocs = multer({
   { name: 'bill', maxCount: 1 }    // Utility Bill/Proof of Address
 ]);
 
+exports.uploadRegistrationDocs = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB per file
+  fileFilter
+}).fields([
+  { name: 'studentIdFront', maxCount: 1 },
+  { name: 'studentIdBack', maxCount: 1 }
+]);
+
 exports.uploadAvatar = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
