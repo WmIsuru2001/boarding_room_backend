@@ -6,14 +6,20 @@ const { uploadToCloudinary } = require('../utils/cloudinary');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-// @desc    Register user
-// @route   POST /api/auth/register
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role, campusRegistrationNumber } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ success: false, message: 'Email already registered' });
+
+    // Validate campusRegistrationNumber uniqueness
+    if (campusRegistrationNumber && campusRegistrationNumber.trim()) {
+      const existingRegistration = await User.findOne({ campusRegistrationNumber: campusRegistrationNumber.trim() });
+      if (existingRegistration) {
+        return res.status(400).json({ success: false, message: 'This registration number is already in use' });
+      }
+    }
 
     let studentIdFrontImage = '';
     let studentIdBackImage = '';
@@ -32,7 +38,7 @@ exports.register = async (req, res) => {
       email, 
       password, 
       role: role || 'student',
-      campusRegistrationNumber: campusRegistrationNumber || '',
+      campusRegistrationNumber: campusRegistrationNumber?.trim() || '',
       studentIdFrontImage,
       studentIdBackImage
     });

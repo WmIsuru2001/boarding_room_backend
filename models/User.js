@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
   utilityBillImage: { type: String, default: '' },
   studentIdFrontImage: { type: String, default: '' },
   studentIdBackImage: { type: String, default: '' },
-  campusRegistrationNumber: { type: String, default: '' },
+  campusRegistrationNumber: { type: String, default: '', unique: true, sparse: true },
   isBanned: { type: Boolean, default: false },
   banReason: { type: String, default: '' },
   university: { type: mongoose.Schema.Types.ObjectId, ref: 'University' },
