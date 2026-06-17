@@ -13,8 +13,8 @@ exports.register = async (req, res) => {
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ success: false, message: 'Email already registered' });
 
-    // Validate campusRegistrationNumber uniqueness
-    if (campusRegistrationNumber && campusRegistrationNumber.trim()) {
+    // Validate campusRegistrationNumber uniqueness (only for students with a value)
+    if (campusRegistrationNumber?.trim()) {
       const existingRegistration = await User.findOne({ campusRegistrationNumber: campusRegistrationNumber.trim() });
       if (existingRegistration) {
         return res.status(400).json({ success: false, message: 'This registration number is already in use' });
@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
       email, 
       password, 
       role: role || 'student',
-      campusRegistrationNumber: campusRegistrationNumber?.trim() || '',
+      campusRegistrationNumber: campusRegistrationNumber?.trim() || null,
       studentIdFrontImage,
       studentIdBackImage
     });
